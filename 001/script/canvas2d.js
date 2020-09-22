@@ -1,6 +1,7 @@
 
 /**
  * Canvas2D API をラップしたユーティリティクラス
+ * 現状、入門書のものを流用
  */
 class Canvas2DUtility {
     /**
