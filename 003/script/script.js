@@ -1,7 +1,9 @@
+
 (() => {
-    
+
     //canvas の幅
     const CANVAS_WIDTH = 640;
+    
     //canvas の高さ
     const CANVAS_HEIGHT = 480;
 
@@ -10,10 +12,20 @@
     
     //描画対象となる Canvas Element
     let canvas = null;
+
     //Canvas2D API のコンテキスト
     let ctx = null;
+    
     //イメージのインスタンス
     let image = null;
+    
+    //ゲーム実行開始時のタイムスタンプ
+    let startTime = null;
+
+    //viper の X 座標
+    let viperX = CANVAS_WIDTH / 2; // ここでは仮で canvas の中心位置
+    //viper の Y 座標
+    let viperY = CANVAS_HEIGHT / 2; // ここでは仮で canvas の中心位置
 
     //ページのロードが完了したときに発火する load イベント
     window.addEventListener('load', () => {
@@ -30,6 +42,10 @@
             image = loadedImage;
             // 初期化処理を行う
             initialize();
+            // イベントを設定する
+            eventSetting();
+            // 実行開始時のタイムスタンプを取得する
+            startTime = Date.now();
             // 描画処理を行う
             render();
         });
@@ -42,17 +58,48 @@
         canvas.height = CANVAS_HEIGHT;
     }
 
-    //描画処理を行う
+    //イベントを設定する
+    function eventSetting(){
+        // キーの押下時に呼び出されるイベントリスナーを設定する
+        window.addEventListener('keydown', (event) => {
+            // 入力されたキーに応じて処理内容を変化させる
+            switch(event.key){
+                case 'ArrowLeft': // アローキーの左
+                    viperX -= 10;
+                    break;
+                case 'ArrowRight': // アローキーの右
+                    viperX += 10;
+                    break;
+                case 'ArrowUp':
+                    viperY -= 10; // アローキーの上
+                    break;
+                case 'ArrowDown':
+                    viperY += 10; // アローキーの下
+                    break;
+            }
+        }, false);
+    }
+
+    /**
+     * 描画処理を行う
+     */
     function render(){
         // 描画前に画面全体を不透明な明るいグレーで塗りつぶす
         util.drawRect(0, 0, canvas.width, canvas.height, '#eeeeee');
-        // 画像を描画する
-        ctx.drawImage(image, 100, 100);
+        // 現在までの経過時間を取得する（ミリ秒を秒に変換するため 1000 で除算）
+        let nowTime = (Date.now() - startTime) / 1000;
+
+        // 画像を描画する（現在の viper の位置に準じた位置に描画する）
+        ctx.drawImage(image, viperX, viperY);
+
+        // 恒常ループのために描画処理を再帰呼出しする
+        requestAnimationFrame(render);
     }
 
-    //特定の範囲におけるランダムな整数の値を生成する  range→乱数を生成する範囲
+    //特定の範囲におけるランダムな整数の値を生成する
     function generateRandomInt(range){
         let random = Math.random();
         return Math.floor(random * range);
     }
 })();
+
