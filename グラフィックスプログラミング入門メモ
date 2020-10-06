@@ -212,4 +212,19 @@ keydownによって呼ばれる関数（第二引数になってるやつ）を�
 矢印キーはArrowキーと言われているため、→キーはArrowRight
 キーの入力があったらViperX,Yをそれぞれ変化させるようにしている。
 
+004
+ゲームのシーン構成を整える（キャラが登場するシーン→操作するシーン）
+（実際のゲームでもタイトル→セーブデータ選択→操作画面みたいにシーンが切り替わって行く）
 
+isComing = true;  自キャラが登場中なのかどうか表すフラグ
+let ComingStart = Date.now();  登場開始した際のTimeStamp
+
+viperY = CANVAS_HEIGHT;(初期位置は画面の下端の外)
+
+viperY = CANVAS_HEIGHT - comingTime*50; //登場中は、時間がたてばたつほど上に向かって勝手に進む
+
+addEventListenerのなかで
+if(isComing === true){
+    return;
+}
+↑isComing = trueの時は、キーの入力を無視するようにする
