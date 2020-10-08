@@ -22,16 +22,11 @@
     //実行開始時のタイムスタンプ
     let startTime = null;
     
-    //viper の X 座標
-     let viperX = CANVAS_WIDTH / 2;
-    //viper の Y 座標
-    let viperY = CANVAS_HEIGHT / 2;
-    
-    //viper が登場中かどうかを表すフラグ
-    let isComing = false;
-    
     //登場演出を開始した際のタイムスタンプ
     let comingStart = null;
+
+    //自キャラクターのインスタンス（実体）定義の段階ではnullを入れとく
+    let viper = null;
 
 
     //ページのロードが完了したときに発火する load イベント
@@ -63,11 +58,16 @@
         // canvas の大きさを設定
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
-
-        // 登場シーンからスタートするための設定
-        isComing = true;          // 登場中フラグを立てる
-        comingStart = Date.now(); // 登場開始のタイムスタンプを取得する
-        viperY = CANVAS_HEIGHT;   // 画面外（下端の外）を初期位置にする
+        
+        //viperを初期化する
+        viper = new Viper(ctx, 0, 0, image);
+        //登場シーンからスタートするための設定
+        viper.setComing(
+            CANVAS_WIDTH / 2,   // 登場演出時の開始 X 座標
+            CANVAS_HEIGHT,      // 登場演出時の開始 Y 座標
+            CANVAS_WIDTH / 2,   // 登場演出を終了とする X 座標
+            CANVAS_HEIGHT - 100 // 登場演出を終了とする Y 座標
+        );
     }
 
 
