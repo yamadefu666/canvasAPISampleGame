@@ -28,6 +28,8 @@ class Character {
         
         this.ctx = ctx;
         this.position = new Position(x, y);
+        this.w = w;
+        this.h = h; 
         this.life = life;
         this.image = image;
     }
