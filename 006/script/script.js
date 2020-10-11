@@ -1,17 +1,23 @@
 
 (() => {
-
-    //canvas の幅
+    /**
+     * canvas の幅
+     * @type {number}
+     */
     const CANVAS_WIDTH = 640;
-    //canvas の高さ
+    /**
+     * canvas の高さ
+     * @type {number}
+     */
     const CANVAS_HEIGHT = 480;
+
     //Canvas2D API をラップしたユーティリティクラス
     let util = null;
     //描画対象となる Canvas Element
     let canvas = null;
     //Canvas2D API のコンテキスト
     let ctx = null;
-    //画像のインスタンス
+    //イメージのインスタンス
     let image = null;
     //実行開始時のタイムスタンプ
     let startTime = null;
@@ -49,11 +55,11 @@
         canvas.height = CANVAS_HEIGHT;
 
         // 自機キャラクターを初期化する
-        viper = new Viper(ctx, 0, 0, image);
+        viper = new Viper(ctx, 0, 0, 64, 64, image);
         // 登場シーンからスタートするための設定を行う
         viper.setComing(
             CANVAS_WIDTH / 2,   // 登場演出時の開始 X 座標
-            CANVAS_HEIGHT,      // 登場演出時の開始 Y 座標
+            CANVAS_HEIGHT + 50, // 登場演出時の開始 Y 座標
             CANVAS_WIDTH / 2,   // 登場演出を終了とする X 座標
             CANVAS_HEIGHT - 100 // 登場演出を終了とする Y 座標
         );
@@ -92,35 +98,17 @@
         // 現在までの経過時間を取得する（ミリ秒を秒に変換するため 1000 で除算）
         let nowTime = (Date.now() - startTime) / 1000;
 
-        // 登場シーンの処理
-        if(viper.isComing === true){
-            // 登場シーンが始まってからの経過時間
-            let justTime = Date.now();
-            let comingTime = (justTime - viper.comingStart) / 1000;
-            // 登場中は時間が経つほど上に向かって進む
-            let y = CANVAS_HEIGHT - comingTime * 50;
-            // 一定の位置まで移動したら登場シーンを終了する
-            if(y <= viper.comingEndPosition.y){
-                viper.isComing = false;        // 登場シーンフラグを下ろす
-                y = viper.comingEndPosition.y; // 行き過ぎの可能性もあるので位置を再設定
-            }
-        
-            // 求めた Y 座標を自機に設定する
-            viper.position.set(viper.position.x, y);
-            // justTime を 100 で割ったとき余りが 50 より小さくなる場合だけ半透明にする
-            if(justTime % 100 < 50){
-                ctx.globalAlpha = 0.5;
-            }
-        }
-
-        // 自機キャラクターを描画する
-        viper.draw();
+        // 自機キャラクターの状態を更新する
+        viper.update();
 
         // 恒常ループのために描画処理を再帰呼出しする
         requestAnimationFrame(render);
     }
 
-    //特定の範囲におけるランダムな整数の値を生成する
+    /*
+      特定の範囲におけるランダムな整数の値を生成する
+      range - 乱数を生成する範囲（0 以上 ～ range 未満)
+    */
     function generateRandomInt(range){
         let random = Math.random();
         return Math.floor(random * range);
