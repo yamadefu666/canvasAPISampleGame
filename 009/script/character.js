@@ -1,14 +1,24 @@
-//座標の管理
-class Position {
 
+/**
+ * 座標を管理するためのクラス
+ */
+class Position {
+    /**
+      x - X 座標
+      y - Y 座標
+     */
     constructor(x, y){
-        //X座標
+        // X 座標
         this.x = x;
-        // Y 座標
+        //Y 座標
         this.y = y;
     }
 
-    //各座標がnull出なかった場合、値を設定する
+    /*
+      値を設定する
+      [x] - 設定する X 座標
+      [y] - 設定する Y 座標
+     */
     set(x, y){
         if(x != null){this.x = x;}
         if(y != null){this.y = y;}
@@ -58,15 +68,29 @@ class Character {
     }
 }
 
-//Characterクラスを継承したviper（自分の操作キャラ）クラス
+/**
+ * viper クラス
+ */
 class Viper extends Character {
+    /**
+     * @constructor
+     * @param {CanvasRenderingContext2D} ctx - 描画などに利用する 2D コンテキスト
+     * @param {number} x - X 座標
+     * @param {number} y - Y 座標
+     * @param {number} w - 幅
+     * @param {number} h - 高さ
+     * @param {Image} image - キャラクター用の画像のパス
+     */
     constructor(ctx, x, y, w, h, imagePath){
         // 継承元の初期化
         super(ctx, x, y, w, h, 0, imagePath);
 
-        //移動速度(update1回あたりの移動量)
+        //自身の移動スピード（update 一回あたりの移動量）
         this.speed = 3;
-
+        //ショットを撃ったあとのチェック用カウンタ
+        this.shotCheckCounter = 0;
+        //ショットを撃つことができる間隔（フレーム数）
+        this.shotInterval = 10;
         //viper が登場中かどうかを表すフラグ
         this.isComing = false;
         //登場演出を開始した際のタイムスタンプ
@@ -75,6 +99,8 @@ class Viper extends Character {
         this.comingStartPosition = null;
         //登場演出を完了とする座標
         this.comingEndPosition = null;
+        //自身が持つショットインスタンスの配列
+        this.shotArray = null;
     }
 
     /**
@@ -97,18 +123,21 @@ class Viper extends Character {
         this.comingEndPosition = new Position(endX, endY);
     }
 
-    //ショットを設定する
+    /*
+      ショットを設定する
+      shotArray - 自身に設定するショットの配列
+     */
     setShotArray(shotArray){
-        this.ShotArray = shotArray;
+        // 自身のプロパティに設定する
+        this.shotArray = shotArray;
     }
 
     //キャラクターの状態を更新し描画を行う
-     
     update(){
         // 現時点のタイムスタンプを取得する
         let justTime = Date.now();
 
-        // 登場シーンの処理
+        // 登場シーンかどうかに応じて処理を振り分ける
         if(this.isComing === true){
             // 登場シーンが始まってからの経過時間
             let comingTime = (justTime - this.comingStart) / 1000;
@@ -127,19 +156,19 @@ class Viper extends Character {
                 this.ctx.globalAlpha = 0.5;
             }
         }else{
+            // キーの押下状態を調べて挙動を変える
             if(window.isKeyDown.key_ArrowLeft === true){
-                this.position.x -= this.speed; //アローキーの左
+                this.position.x -= this.speed; // アローキーの左
             }
             if(window.isKeyDown.key_ArrowRight === true){
-                this.position.x += this.speed; //アローキーの右
+                this.position.x += this.speed; // アローキーの右
             }
             if(window.isKeyDown.key_ArrowUp === true){
-                this.position.y -= this.speed; //アローキーの上
+                this.position.y -= this.speed; // アローキーの上
             }
             if(window.isKeyDown.key_ArrowDown === true){
-                this.position.y += this.speed; //アローキーの下
+                this.position.y += this.speed; // アローキーの下
             }
-
             // 移動後の位置が画面外へ出ていないか確認して修正する
             let canvasWidth = this.ctx.canvas.width;
             let canvasHeight = this.ctx.canvas.height;
@@ -149,18 +178,26 @@ class Viper extends Character {
 
             // キーの押下状態を調べてショットを生成する
             if(window.isKeyDown.key_z === true){
-                //ショットの生存を確認し、非生存のものがあれば生成する
-                for(let i = 0; i < this.shotArray.length; i++){
-                    if(this.shotArray[i].life <= 0){
-                        //自機キャラクターの座標にショットを生成する
-                        this.shotArray[i].set(this.position.x, this.position.y);
-                        //一つ生成したらループを抜ける
-                        break;
+                // ショットを撃てる状態なのかを確認する
+                // ショットチェック用カウンタが 0 以上ならショットを生成できる
+                if(this.shotCheckCounter >= 0){
+                    // ショットの生存を確認し非生存のものがあれば生成する
+                    for(let i = 0; i < this.shotArray.length; ++i){
+                        // 非生存かどうかを確認する
+                        if(this.shotArray[i].life <= 0){
+                            // 自機キャラクターの座標にショットを生成する
+                            this.shotArray[i].set(this.position.x, this.position.y);
+                            // ショットを生成したのでインターバルを設定する
+                            this.shotCheckCounter = -this.shotInterval;
+                            // ひとつ生成したらループを抜ける
+                            break;
+                        }
                     }
                 }
             }
+            // ショットチェック用のカウンタをインクリメントする
+            ++this.shotCheckCounter;
         }
-        
 
         // 自機キャラクターを描画する
         this.draw();
@@ -193,7 +230,6 @@ class Shot extends Character {
         this.life = 1;
     }
 
-    
     //キャラクターの状態を更新し描画を行う
     update(){
         // もしショットのライフが 0 以下の場合はなにもしない
@@ -208,3 +244,4 @@ class Shot extends Character {
         this.draw();
     }
 }
+
