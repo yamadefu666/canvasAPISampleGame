@@ -15,6 +15,8 @@
     const ENEMY_MAX_COUNT = 10;
     //ショットの最大個数
     const SHOT_MAX_COUNT = 10;
+    //敵ショットの最大個数
+    const ENEMY_SHOT_MAX_COUNT = 50;
 
     //Canvas2D API をラップしたユーティリティクラス
     let util = null;
@@ -34,6 +36,8 @@
     let shotArray = [];
     //シングルショットのインスタンスを格納する配列
     let singleShotArray = [];
+    //敵キャラのショットインスタンスを格納する配列
+    let enemyShotArray = [];
 
     //ページのロードが完了したときに発火する load イベント
     window.addEventListener('load', () => {
@@ -69,10 +73,18 @@
             CANVAS_WIDTH / 2,   // 登場演出を終了とする X 座標
             CANVAS_HEIGHT - 100 // 登場演出を終了とする Y 座標
         );
+        //ショットを時期キャラクターに設定する
+        viper.setShotArray(shotArray, singleShotArray);
+
+        //敵キャラクターのショットを初期化する
+        for(i = 0; i<ENEMY_SHOT_MAX_COUNT; ++i){
+            enemyArray[i] = new Shot(ctx, 0, 0, 32, 32, './image/enemy_shot.png');
+        }
 
         // 敵キャラクターを初期化する
         for(i = 0; i < ENEMY_MAX_COUNT; ++i){
             enemyArray[i] = new Enemy(ctx, 0, 0, 48, 48, './image/enemy_small.png');
+            enemyArray[i].setShotArray(enemyShotArray);
         }
 
         // ショットを初期化する
@@ -81,9 +93,6 @@
             singleShotArray[i * 2] = new Shot(ctx, 0, 0, 32, 32, './image/viper_single_shot.png');
             singleShotArray[i * 2 + 1] = new Shot(ctx, 0, 0, 32, 32, './image/viper_single_shot.png');
         }
-
-        // ショットを自機キャラクターに設定する
-        viper.setShotArray(shotArray, singleShotArray);
     }
 
     //インスタンスの準備が完了しているか確認する
@@ -102,6 +111,10 @@
         });
         // 同様にシングルショットの準備状況も確認する
         singleShotArray.map((v) => {
+            ready = ready && v.ready;
+        });
+        //同様に敵キャラクターのショットの準備状況も確認する
+        enemyShotArray.map((v) => {
             ready = ready && v.ready;
         });
 
@@ -159,6 +172,10 @@
                     break;
                 }
             }
+            // シーンのフレーム数が 100 になったときに再度 invade を設定する
+            if(scene.frame === 100){
+                scene.use('invade');
+            }
         });
         // 一番最初のシーンには intro を設定する
         scene.use('intro');
@@ -191,6 +208,11 @@
 
         // シングルショットの状態を更新する
         singleShotArray.map((v) => {
+            v.update();
+        });
+
+        //敵キャラクターのショットの状態を更新する
+        enemyShotArray.map((v) => {
             v.update();
         });
 
