@@ -55,7 +55,7 @@ class Character {
         this.image.src = imagePath;
     }
 
-    /**
+    /*
       進行方向を設定する
       x - X 方向の移動量
       y - Y 方向の移動量
